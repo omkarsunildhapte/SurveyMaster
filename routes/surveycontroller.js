@@ -1,6 +1,5 @@
-const Survey = require('../models/survey'); // Import the Survey model
+const Survey = require('../models/survey');
 
-// Display list of all surveys
 exports.listSurveys = async (req, res) => {
   try {
     const surveys = await Survey.find();
@@ -10,7 +9,6 @@ exports.listSurveys = async (req, res) => {
   }
 };
 
-// Display detail page for a specific survey
 exports.surveyDetail = async (req, res) => {
   try {
     const survey = await Survey.findById(req.params.id);
@@ -20,12 +18,10 @@ exports.surveyDetail = async (req, res) => {
   }
 };
 
-// Display survey create form on GET
 exports.surveyCreateGet = (req, res) => {
   res.render('surveys/new-survey');
 };
 
-// Handle survey create on POST
 exports.surveyCreatePost = async (req, res) => {
   try {
     const survey = new Survey({
@@ -40,7 +36,6 @@ exports.surveyCreatePost = async (req, res) => {
   }
 };
 
-// Display survey delete form on GET
 exports.surveyDeleteGet = async (req, res) => {
   try {
     await Survey.findByIdAndDelete(req.params.id);
@@ -50,7 +45,6 @@ exports.surveyDeleteGet = async (req, res) => {
   }
 };
 
-// Display survey update form on GET
 exports.surveyUpdateGet = async (req, res) => {
   try {
     const survey = await Survey.findById(req.params.id);
@@ -60,7 +54,6 @@ exports.surveyUpdateGet = async (req, res) => {
   }
 };
 
-// Handle survey update on POST
 exports.surveyUpdatePost = async (req, res) => {
   try {
     const survey = await Survey.findByIdAndUpdate(req.params.id, req.body);
