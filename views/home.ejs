@@ -1,22 +1,29 @@
+<!-- home.ejs -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to SurveyMaster</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
+
 <body>
-  <%- include('partials/header') %>
+  <% include('partials/header') %>
 
-  <div class="landing-page">
-    <p class="survey-quote">"Surveys show that surveys never lie." - Natalie Angier</p>
-    <h1>Welcome to SurveyMaster</h1>
-    <p>The ultimate tool for creating and managing your surveys.</p>
-    <a href="/surveys/new" class="hero-button">Create a New Survey</a>
-  </div>
-  
+    <div class="landing-page">
+      <p class="survey-quote">"Surveys show that surveys never lie." - Natalie Angier</p>
+      <h1>Welcome to SurveyMaster</h1>
+      <p>The ultimate tool for creating and managing your surveys.</p>
+      <% if (!user) { %>
+        <a href="/auth/github" class="hero-button">Login with GitHub</a>
+        <% } else { %>
+          <a href="/surveys/new" class="hero-button">Create a New Survey</a>
+          <% } %>
+    </div>
 
-  <%- include('partials/footer') %>
+    <% include('partials/footer') %>
 </body>
+
 </html>
