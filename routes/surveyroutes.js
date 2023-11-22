@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 const surveyController = require('./surveycontroller');
 const Survey = require('../models/survey'); // Adjust the path accordingly
 
-// Route to display all surveys
 router.get('/', surveyController.listSurveys);
 
 // Route to display the form for creating a new survey
@@ -21,7 +21,6 @@ router.get('/:id/edit', surveyController.surveyUpdateGet);
 // Route to handle the form submission for updating an existing survey
 router.put('/:id', surveyController.surveyUpdatePost);
 
-// Route to handle the deletion of a survey
 router.delete('/:id', async (req, res) => {
     const surveyId = req.params.id;
 
@@ -38,5 +37,19 @@ router.delete('/:id', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+// Corrected login route
+router.get('/login', (req, res) => {
+    console.log('Login route hit');
+    res.render('login');
+});
+
+router.get('/login/github', passport.authenticate('github'));
+
+router.get('/auth/github/callback',
+    passport.authenticate('github', { failureRedirect: '/' }),
+    (req, res) => {
+        res.redirect('/profile');
+    });
 
 module.exports = router;
