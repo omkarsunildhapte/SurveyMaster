@@ -36,6 +36,12 @@ const surveySchema = new mongoose.Schema({
   }
 });
 
+// Change the method from findByIdAndDelete to findOneAndDelete
+surveySchema.statics.findByIdAndRemove = async function (id) {
+  const survey = await this.findOneAndDelete({ _id: id });
+  return survey;
+};
+
 const Survey = mongoose.model('Survey', surveySchema);
 
 module.exports = Survey;

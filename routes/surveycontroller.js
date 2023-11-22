@@ -31,7 +31,7 @@ exports.surveyCreatePost = async (req, res) => {
     const survey = new Survey({
       title: req.body.title,
       description: req.body.description,
-      questions: req.body.questions,               // Make sure to structure the questions input correctly on the client-side
+      questions: req.body.questions, // Make sure to structure the questions input correctly on the client-side
     });
     await survey.save();
     res.redirect('/surveys');
@@ -63,11 +63,22 @@ exports.surveyUpdateGet = async (req, res) => {
 // Handle survey update on POST
 exports.surveyUpdatePost = async (req, res) => {
   try {
-    const survey = await Survey.findByIdAndUpdate(req.params.id, req.body);
+    const updatedSurvey = await Survey.findByIdAndUpdate(
+      req.params.id,
+      {
+        title: req.body.title,
+        description: req.body.description,
+        questions: req.body.questions, // Adjust this based on your form structure
+      },
+      { new: true } // This option ensures that the function returns the updated survey
+    );
+
+    if (!updatedSurvey) {
+      return res.status(404).send('Survey not found');
+    }
+
     res.redirect('/surveys');
   } catch (error) {
     res.status(500).send(error.message);
   }
 };
-
-

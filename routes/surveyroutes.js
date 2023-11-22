@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const surveyController = require('./surveycontroller');
+const Survey = require('../models/survey'); // Adjust the path accordingly
 
 // Route to display all surveys
 router.get('/', surveyController.listSurveys);
@@ -21,7 +22,21 @@ router.get('/:id/edit', surveyController.surveyUpdateGet);
 router.put('/:id', surveyController.surveyUpdatePost);
 
 // Route to handle the deletion of a survey
-router.delete('/:id', surveyController.surveyDeleteGet);
+router.delete('/:id', async (req, res) => {
+    const surveyId = req.params.id;
 
+    try {
+        const deletedSurvey = await Survey.findByIdAndDelete(surveyId);
+
+        if (deletedSurvey) {
+            res.redirect('/surveys'); // Redirect to the survey list or another appropriate route
+        } else {
+            res.status(404).send('Survey not found');
+        }
+    } catch (error) {
+        console.error('Error deleting survey:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 module.exports = router;
