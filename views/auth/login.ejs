@@ -1,0 +1,22 @@
+<!-- views/login.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+
+<body>
+    <%- include('./partials/header') %>
+        <main>
+            <form action="/auth/github" method="GET">
+                <button type="submit">Login with GitHub</button>
+            </form>
+        </main>
+        <%- include('./partials/footer') %>
+</body>
+
+</html>
