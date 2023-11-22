@@ -3,14 +3,10 @@ const mongoose = require('mongoose');
 const methodOverride = require('method-override');
 const dotenv = require('dotenv');
 const passport = require('passport');
-<<<<<<< Updated upstream
-const GitHubStrategy = require('passport-github').Strategy;
-const session = require('express-session');
-=======
 const GitHubStrategy = require('passport-github').Strategy; // Add GitHubStrategy
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const User = require('./models/user');
->>>>>>> Stashed changes
 
 dotenv.config();
 
@@ -21,9 +17,6 @@ app.use(express.static('public'));
 app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
 
-<<<<<<< Updated upstream
-// Connect to MongoDB and start the server within the connection callback
-=======
 // Set up session middleware
 app.use(session({ secret: 'b9e4d8b6a1777d83cfbffcbeab7ac69f5d04e29d2a00007c7808bb787c384a0c', resave: true, saveUninitialized: true }));
 
@@ -32,7 +25,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // MongoDB connection
->>>>>>> Stashed changes
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('MongoDB connected successfully.');
@@ -46,61 +38,13 @@ mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology
     process.exit(1);
   });
 
-<<<<<<< Updated upstream
 // Passport configuration
-app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: true }));
-app.use(passport.initialize());
-app.use(passport.session());
 
-=======
->>>>>>> Stashed changes
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
   callbackURL: 'http://localhost:3000/auth/github/callback',
 },
-<<<<<<< Updated upstream
-  (accessToken, refreshToken, profile, done) => {
-    // Store user information in MongoDB
-    // Adjust the User model according to your needs
-    const User = mongoose.model('User', new mongoose.Schema({
-      githubId: String,
-      username: String,
-      displayName: String,
-      // Add more fields as needed
-    }));
-
-    User.findOneAndUpdate({ githubId: profile.id }, {
-      githubId: profile.id,
-      username: profile.username,
-      displayName: profile.displayName,
-    }, { upsert: true, new: true }, (err, user) => {
-      return done(err, user);
-    });
-  }
-));
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-  const User = mongoose.model('User');
-  User.findById(id, (err, user) => {
-    done(err, user);
-  });
-});
-
-// Routes
-const surveyRoutes = require('./routes/surveyroutes');
-const authRoutes = require('./routes/authroutes');
-
-app.use('/surveys', surveyRoutes);
-app.use('/auth', authRoutes);
-
-app.get('/', (req, res) => {
-  res.render('home', { user: req.user });
-=======
   function (accessToken, refreshToken, profile, done) {
     User.findOrCreate({ githubId: profile.id }, function (err, user) {
       return done(err, user);
@@ -154,7 +98,6 @@ app.get('/profile', (req, res) => {
   } else {
     res.redirect('/login');
   }
->>>>>>> Stashed changes
 });
 
 // Logout route
