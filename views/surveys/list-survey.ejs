@@ -1,44 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey List</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
-
 <body>
-  <%- include('../partials/header') %>
+  <%- include('partials/header') %>
 
-    <div>
-      <h2>Survey List</h2>
-      <% if (surveys.length> 0) { %>
-        <ul class="survey-list">
-          <% surveys.forEach(function(survey) { %>
-            <li class="survey-item">
-              <a href="/surveys/<%= survey._id %>">
-                <%= survey.title %>
-              </a>
-              <form action="/surveys/<%= survey._id %>?_method=DELETE" method="POST" style="display: flex; gap:10px">
-                <button type="button" class="button-inline">
-                  <a class="button-inline" href="/surveys/<%= survey._id %>/edit">
-                    Edit
-                  </a>
-                </button>
-                <button type="submit" class="button-inline">Delete</button>
-              </form>
-            </li>
-            <% }) %>
-        </ul>
-        <% } else { %>
-          <p>No surveys found.</p>
-          <% } %>
-    </div>
-
-    <a href="/surveys/new" class="create-survey-link">Create New Survey</a>
-
-    <%- include('../partials/footer') %>
+  <div>
+    <h2>Survey List</h2>
+    <% if (surveys.length > 0) { %>
+      <ul class="survey-list">
+        <% surveys.forEach(function(survey) { %>
+          <li class="survey-item">
+            <a href="/surveys/<%= survey._id %>"><%= survey.title %></a>
+            <form action="/surveys/<%= survey._id %>?_method=DELETE" method="POST" style="display: inline;">
+              <button type="submit" class="button-inline">Delete</button>
+            </form>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No surveys found.</p>
+    <% } %>
+  </div>
+  
+  <a href="/surveys/new" class="create-survey-link">Create New Survey</a>
+  
+  <%- include('partials/footer') %>
 </body>
-
 </html>

@@ -31,7 +31,7 @@ exports.surveyCreatePost = async (req, res) => {
     const survey = new Survey({
       title: req.body.title,
       description: req.body.description,
-      questions: req.body.questions,
+      questions: req.body.questions,               // Make sure to structure the questions input correctly on the client-side
     });
     await survey.save();
     res.redirect('/surveys');
@@ -43,7 +43,7 @@ exports.surveyCreatePost = async (req, res) => {
 // Display survey delete form on GET
 exports.surveyDeleteGet = async (req, res) => {
   try {
-    await Survey.findByIdAndDelete(req.params.id);
+    await Survey.findByIdAndRemove(req.params.id);
     res.redirect('/surveys');
   } catch (error) {
     res.status(500).send(error.message);
@@ -69,3 +69,5 @@ exports.surveyUpdatePost = async (req, res) => {
     res.status(500).send(error.message);
   }
 };
+
+
