@@ -54,6 +54,9 @@ exports.surveyUpdateGet = async (req, res) => {
   }
 };
 
+const surveyCreateGet = (req, res) => {
+  res.render('survey_create'); // Replace 'survey_create' with the actual name of your view file
+};
 exports.surveyUpdatePost = async (req, res) => {
   try {
     const survey = await Survey.findByIdAndUpdate(req.params.id, req.body);

@@ -7,7 +7,7 @@ const GitHubStrategy = require('passport-github').Strategy; // Add GitHubStrateg
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const User = require('./models/user');
-
+const surveyRoutes = require('./routes/surveyroutes');
 dotenv.config();
 
 const app = express();
@@ -23,6 +23,7 @@ app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
 app.use(passport.initialize());
 app.use(passport.session());
+app.use('/surveys', surveyRoutes);
 
 passport.serializeUser(function (user, cb) {
   cb(null, user.id);
