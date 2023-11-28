@@ -26,7 +26,7 @@ const surveySchema = new mongoose.Schema({
   responses: [{
     questionText: String,
     response: {
-      type: [String], // Array to support multiple selections for checkboxes
+      type: [String],
       required: true
     }
   }],

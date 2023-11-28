@@ -1,4 +1,4 @@
-<!-- views/login.ejs -->
+<!-- views/auth/login.ejs -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,16 +7,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        integrity="sha512-0mzYN4JL6jnuI2vi74bCpn8kN+5e7TvwcvMOhGv7eWZQWqF4PYBBlrxW4zBt8Kc0BCDHg+gZBRgGZQfXVXEAg=="
+        crossorigin="anonymous" />
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        main {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        #password {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .eye-icon {
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4285f4;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #1967d2;
+        }
+    </style>
 </head>
 
 <body>
-    <%- include('./partials/header') %>
-        <main>
-            <form action="/auth/github" method="GET">
-                <button type="submit">Login with GitHub</button>
-            </form>
-        </main>
-        <%- include('./partials/footer') %>
+    <main>
+        <img src="/images/teamlogo.png" alt="Team Logo" style="display: block; margin: 0 auto; max-width: 100%;">
+
+        <h2 style="text-align: center;">Login</h2>
+        <form action="/login" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="Password" required>
+                <span class="eye-icon" onclick="togglePasswordVisibility()">
+                    <i id="eye-icon" class="far fa-eye"></i>
+                </span>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+
+        <!-- Add a link to the registration page -->
+        <p style="text-align: center; margin-top: 10px;">
+            Don't have an account? <a href="/register">Register</a>
+        </p>
+    </main>
+
+
+    <%- include('../partials/footer') %>
+        <script>
+            function togglePasswordVisibility() {
+                const passwordInput = document.getElementById('password');
+                const eyeIcon = document.getElementById('eye-icon');
+
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    eyeIcon.classList.remove('fa-eye');
+                    eyeIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    eyeIcon.classList.remove('fa-eye-slash');
+                    eyeIcon.classList.add('fa-eye');
+                }
+            }
+        </script>
 </body>
 
 </html>

@@ -3,40 +3,41 @@ const mongoose = require('mongoose');
 const methodOverride = require('method-override');
 const dotenv = require('dotenv');
 const passport = require('passport');
-const GitHubStrategy = require('passport-github').Strategy; // Add GitHubStrategy
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+const flash = require('connect-flash');
+const path = require('path');
+const bcrypt = require('bcrypt');
 const User = require('./models/user');
 const surveyRoutes = require('./routes/surveyroutes');
+
 dotenv.config();
 
 const app = express();
 
 app.use(session({
-  secret: 'b9e4d8b6a1777d83cfbffcbeab7ac69f5d04e29d2a00007c7808bb787c384a0c', // Replace with a secure secret
-  resave: true,
-  saveUninitialized: true
-}));
+  secret: 'some_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 } // this is the key
+}))
+
+app.use(flash());
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(methodOverride('_method'));
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/surveys', surveyRoutes);
 
-passport.serializeUser(function (user, cb) {
-  cb(null, user.id);
-});
-
-passport.deserializeUser(function (id, cb) {
-  cb(null, id);
-});
-
+// MongoDB connection
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('MongoDB connected successfully.');
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
@@ -46,82 +47,97 @@ mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology
     process.exit(1);
   });
 
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: "http://localhost:3000/auth/github/callback"
-},
-  function (accessToken, refreshToken, profile, cb) {
-    // User.findOrCreate({ githubId: profile.id }, function (err, user) {
-    //   return cb(err, user);
-    // });
-    cb(null, profile)
-    console.log(profile)
+// Passport LocalStrategy
+passport.use(new LocalStrategy(
+  async function (username, password, done) {
+    try {
+      const user = await User.findOne({ username });
+
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (!passwordMatch) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+
+      return done(null, user);
+    } catch (error) {
+      return done(error);
+    }
   }
 ));
 
-app.get('/auth/github',
-  passport.authenticate('github'));
+// Passport serialization
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
 
-app.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login' }),
-  function (req, res) {
-    // Successful authentication, redirect home.
-    res.redirect('/');
-  });
-// passport.use(new GoogleStrategy({
-//   clientID: process.env.GOOGLE_CLIENT_ID,
-//   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//   callbackURL: "http://localhost:3000/auth/google/callback"
-// },
-//   function (accessToken, refreshToken, profile, cb) {
-//     // User.findOrCreate({ googleId: profile.id }, function (err, user) {
-//     //   return cb(err, user);
-//     // });
-//     cb(null, profile);
-//     console.log(profile);
-//   }
-// ));
-
-// Google login route
-app.get('/login/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-// Google callback route
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  function (req, res) {
-    // Successful authentication, redirect home.
-    res.redirect('/');
-  });
-
-app.get('/profile', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.render('profile', { user: req.user });
-  } else {
-    res.redirect('/login');
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
   }
 });
 
-// Logout route
-app.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+// Registration route
+app.get('/register', (req, res) => {
+  res.render('auth/register');
 });
 
-// GitHub login route
-app.get('/login/github', passport.authenticate('github'));
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
 
-// GitHub callback route
-app.get('/auth/github/callback',
-  passport.authenticate('github', { failureRedirect: '/' }),
-  (req, res) => res.redirect('/profile'));
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-// Simple login route
+    const newUser = new User({ username, password: hashedPassword });
+    await newUser.save();
+
+    res.redirect('/login');
+  } catch (error) {
+    console.error('Error registering user:', error);
+    req.flash('error', 'Error registering user.');
+    res.render('auth/register', { error: 'Error registering user.' });
+  }
+});
+
+// Login route
 app.get('/login', (req, res) => {
-  res.render('login');
+  res.render('auth/login', { messages: req.flash() });
 });
+
+app.post('/login',
+  passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/login',
+    failureFlash: true
+  })
+);
+
 // Home route
 app.get('/', (req, res) => {
-  console.log(req.User)
-  res.render('home');
+  if (req.isAuthenticated()) {
+    res.render('home', { user: req.user });
+  } else {
+    res.render('auth/login');
+  }
+});
+router.get('/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error('Error logging out:', err);
+      return res.redirect('/');
+    }
+    res.redirect('/login');
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
