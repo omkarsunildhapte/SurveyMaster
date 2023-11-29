@@ -64,11 +64,18 @@
     <main>
         <img src="/images/teamlogo.png" alt="Team Logo" style="display: block; margin: 0 auto; max-width: 100%;">
         <h2 style="text-align: center;">Register</h2>
-        <form action="/register" method="POST">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Register</button>
-        </form>
+        <% let messages=locals.messages || []; %>
+            <% if (messages && messages.error) { %>
+                <p style="color: red; text-align: center;">
+                    <%= messages.error %>
+                </p>
+                <% } %>
+
+                    <form action="/register" method="POST">
+                        <input type="text" name="username" placeholder="Username" required>
+                        <input type="password" name="password" placeholder="Password" required>
+                        <button type="submit">Register</button>
+                    </form>
     </main>
     <%- include('../partials/footer') %>
 </body>

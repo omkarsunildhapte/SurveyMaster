@@ -40,6 +40,7 @@ router.delete('/:id', async (req, res) => {
 
 // Logout route
 router.get('/logout', (req, res) => {
+    console.log('i am here logout')
     req.logout((err) => {
         if (err) {
             console.error('Error logging out:', err);

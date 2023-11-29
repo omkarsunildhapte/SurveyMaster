@@ -15,20 +15,21 @@ dotenv.config();
 
 const app = express();
 
-app.use(session({
-  secret: 'some_secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 1000 } // this is the key
-}))
-
-app.use(flash());
-
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-app.use(methodOverride('_method'));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'some_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 60 * 24, sameSite: 'strict', secure: false } // Adjust 'secure' based on your deployment
+}));
+
+app.use(flash());
+app.use(methodOverride('_method'));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/surveys', surveyRoutes);
@@ -84,17 +85,31 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// Registration route
 app.get('/register', (req, res) => {
-  res.render('auth/register');
+  res.render('auth/register', { messages: req.flash() });
 });
 
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    // Validate input
+    if (!username || !password) {
+      req.flash('error', 'Username and password are required.');
+      return res.redirect('/register');
+    }
+
+    // Check if the username is already taken
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      req.flash('error', 'Username is already taken.');
+      return res.redirect('/register');
+    }
+
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create a new user
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
 
@@ -102,7 +117,7 @@ app.post('/register', async (req, res) => {
   } catch (error) {
     console.error('Error registering user:', error);
     req.flash('error', 'Error registering user.');
-    res.render('auth/register', { error: 'Error registering user.' });
+    res.redirect('/register');
   }
 });
 
@@ -127,7 +142,9 @@ app.get('/', (req, res) => {
     res.render('auth/login');
   }
 });
-router.get('/logout', (req, res) => {
+
+// Logout route
+app.get('/logout', (req, res) => {
   req.logout((err) => {
     if (err) {
       console.error('Error logging out:', err);
@@ -135,6 +152,13 @@ router.get('/logout', (req, res) => {
     }
     res.redirect('/login');
   });
+});
+
+
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send('Internal Server Error');
 });
 
 const PORT = process.env.PORT || 3000;
